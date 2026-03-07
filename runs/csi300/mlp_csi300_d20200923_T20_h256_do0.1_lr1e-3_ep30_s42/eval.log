@@ -1,0 +1,29 @@
+[1941:MainThread](2026-03-03 19:06:43,204) INFO - qlib.Initialization - [config.py:452] - default_conf: client.
+[1941:MainThread](2026-03-03 19:06:43,834) INFO - qlib.Initialization - [__init__.py:82] - qlib successfully initialized based on client settings.
+[1941:MainThread](2026-03-03 19:06:43,835) INFO - qlib.Initialization - [__init__.py:84] - data_path={'__DEFAULT_FREQ': PosixPath('/root/autodl-tmp/qlib_data')}
+[1941:MainThread](2026-03-03 19:06:48,553) INFO - qlib.Initialization - [config.py:452] - default_conf: client.
+[1941:MainThread](2026-03-03 19:06:48,557) INFO - qlib.Initialization - [__init__.py:82] - qlib successfully initialized based on client settings.
+[1941:MainThread](2026-03-03 19:06:48,558) INFO - qlib.Initialization - [__init__.py:84] - data_path={'__DEFAULT_FREQ': PosixPath('/root/autodl-tmp/qlib_data')}
+=== RAW label sanity check ===
+count    124843.000000
+mean          0.001252
+std           0.024431
+min          -0.512071
+1%           -0.062862
+5%           -0.033636
+50%           0.000000
+95%           0.041884
+99%           0.082124
+max           0.121121
+Name: label, dtype: float64
+share(|raw|>0.11): 0.0002082615765401344
+rows: 125241 raw_non_null: 124843
+Saved: runs/csi300/mlp_csi300_d20200923_T20_h256_do0.1_lr1e-3_ep30_s42/daily_preds_raw.parquet
+
+=== IC / RankIC on RAW return ===
+IC_mean=0.037021 IC_std=0.152000 ICIR=3.866 days=418
+RankIC_mean=0.050623 RankIC_std=0.152902 RankICIR=5.256 days=418
+
+=== TopK-Drop Backtest ===
+ABS  : AR=0.4459 IR=1.714 days=418  saved=runs/csi300/mlp_csi300_d20200923_T20_h256_do0.1_lr1e-3_ep30_s42/daily_ret_topkdrop_raw.parquet
+EXCESS(SH000300): AR=0.0707 IR=0.814 days=418  saved=runs/csi300/mlp_csi300_d20200923_T20_h256_do0.1_lr1e-3_ep30_s42/daily_ret_topkdrop_excess.parquet

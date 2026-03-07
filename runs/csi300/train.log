@@ -1,0 +1,111 @@
+[4417:MainThread](2026-03-03 20:20:34,029) INFO - qlib.Initialization - [config.py:452] - default_conf: client.
+[4417:MainThread](2026-03-03 20:20:34,606) INFO - qlib.Initialization - [__init__.py:82] - qlib successfully initialized based on client settings.
+[4417:MainThread](2026-03-03 20:20:34,607) INFO - qlib.Initialization - [__init__.py:84] - data_path={'__DEFAULT_FREQ': PosixPath('/root/autodl-tmp/qlib_data')}
+
+=== split 1: train=(0, 1181) valid=(1182, 1424) test=(1425, 1665) ===
+epoch=001 valid_loss=0.000225
+epoch=002 valid_loss=0.000104
+epoch=003 valid_loss=0.000096
+epoch=004 valid_loss=0.000034
+epoch=005 valid_loss=0.000039
+epoch=006 valid_loss=0.000021
+epoch=007 valid_loss=0.000048
+epoch=008 valid_loss=0.000064
+epoch=009 valid_loss=0.000012
+epoch=010 valid_loss=0.000007
+epoch=011 valid_loss=0.000281
+epoch=012 valid_loss=0.000012
+epoch=013 valid_loss=0.000017
+epoch=014 valid_loss=0.000005
+epoch=015 valid_loss=0.000022
+epoch=016 valid_loss=0.000003
+epoch=017 valid_loss=0.000005
+epoch=018 valid_loss=0.000051
+epoch=019 valid_loss=0.000002
+epoch=020 valid_loss=0.000002
+epoch=021 valid_loss=0.000002
+epoch=022 valid_loss=0.000002
+epoch=023 valid_loss=0.000003
+epoch=024 valid_loss=0.000006
+epoch=025 valid_loss=0.000003
+epoch=026 valid_loss=0.000008
+epoch=027 valid_loss=0.000002
+epoch=028 valid_loss=0.000005
+epoch=029 valid_loss=0.000002
+epoch=030 valid_loss=0.000002
+epoch=031 valid_loss=0.000014
+epoch=032 valid_loss=0.000007
+epoch=033 valid_loss=0.000004
+epoch=034 valid_loss=0.000003
+epoch=035 valid_loss=0.000004
+epoch=036 valid_loss=0.000003
+epoch=037 valid_loss=0.000002
+epoch=038 valid_loss=0.000002
+epoch=039 valid_loss=0.000003
+epoch=040 valid_loss=0.000002
+epoch=041 valid_loss=0.000004
+epoch=042 valid_loss=0.000003
+epoch=043 valid_loss=0.000003
+epoch=044 valid_loss=0.000002
+epoch=045 valid_loss=0.000001
+epoch=046 valid_loss=0.000004
+epoch=047 valid_loss=0.000056
+epoch=048 valid_loss=0.000003
+epoch=049 valid_loss=0.000004
+epoch=050 valid_loss=0.000161
+Saved ckpt to: runs/csi300/split01_best.pt
+
+=== split 2: train=(238, 1424) valid=(1425, 1665) test=(1666, 1842) ===
+epoch=001 valid_loss=nan
+epoch=002 valid_loss=nan
+epoch=003 valid_loss=nan
+epoch=004 valid_loss=nan
+epoch=005 valid_loss=nan
+epoch=006 valid_loss=nan
+epoch=007 valid_loss=nan
+epoch=008 valid_loss=nan
+epoch=009 valid_loss=nan
+epoch=010 valid_loss=nan
+epoch=011 valid_loss=nan
+epoch=012 valid_loss=nan
+epoch=013 valid_loss=nan
+epoch=014 valid_loss=nan
+epoch=015 valid_loss=nan
+epoch=016 valid_loss=nan
+epoch=017 valid_loss=nan
+epoch=018 valid_loss=nan
+epoch=019 valid_loss=nan
+epoch=020 valid_loss=nan
+epoch=021 valid_loss=nan
+epoch=022 valid_loss=nan
+epoch=023 valid_loss=nan
+epoch=024 valid_loss=nan
+epoch=025 valid_loss=nan
+epoch=026 valid_loss=nan
+epoch=027 valid_loss=nan
+epoch=028 valid_loss=nan
+epoch=029 valid_loss=nan
+epoch=030 valid_loss=nan
+epoch=031 valid_loss=nan
+epoch=032 valid_loss=nan
+epoch=033 valid_loss=nan
+epoch=034 valid_loss=nan
+epoch=035 valid_loss=nan
+epoch=036 valid_loss=nan
+epoch=037 valid_loss=nan
+epoch=038 valid_loss=nan
+epoch=039 valid_loss=nan
+epoch=040 valid_loss=nan
+epoch=041 valid_loss=nan
+epoch=042 valid_loss=nan
+epoch=043 valid_loss=nan
+epoch=044 valid_loss=nan
+epoch=045 valid_loss=nan
+epoch=046 valid_loss=nan
+epoch=047 valid_loss=nan
+epoch=048 valid_loss=nan
+epoch=049 valid_loss=nan
+epoch=050 valid_loss=nan
+Saved ckpt to: runs/csi300/split02_best.pt
+Saved metrics to: runs/csi300/daily_metrics.parquet
+Saved preds to: runs/csi300/daily_preds.parquet

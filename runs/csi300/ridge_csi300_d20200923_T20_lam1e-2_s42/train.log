@@ -1,0 +1,6 @@
+
+=== split 1: train=(0, 1181) valid=(1182, 1424) test=(1425, 1665) ===
+
+=== split 2: train=(238, 1424) valid=(1425, 1665) test=(1666, 1843) ===
+Saved metrics to: runs/csi300/ridge_csi300_d20200923_T20_lam1e-2_s42/daily_metrics.parquet
+Saved preds to: runs/csi300/ridge_csi300_d20200923_T20_lam1e-2_s42/daily_preds.parquet

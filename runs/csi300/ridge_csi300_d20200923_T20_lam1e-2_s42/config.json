@@ -1,0 +1,12 @@
+{
+  "args": {
+    "data_dir": "data",
+    "market": "csi300",
+    "npz_path": "data/csi300/csi300_alpha158_2013-01-01_2023-12-31.npz",
+    "seed": 42,
+    "window_T": 20,
+    "ridge_lambda": 0.01,
+    "run_name": "ridge_csi300_d20200923_T20_lam1e-2_s42"
+  },
+  "npz_path": "data/csi300/csi300_alpha158_2013-01-01_2023-12-31.npz"
+}

@@ -1,0 +1,31 @@
+{
+  "args": {
+    "data_dir": "data",
+    "market": "csi300",
+    "npz_path": "data/csi300/csi300_alpha158_2013-01-01_2023-12-31.npz",
+    "qlib_uri": "/root/autodl-tmp/qlib_data",
+    "epochs": 50,
+    "lr": 0.001,
+    "seed": 42,
+    "device": "cuda",
+    "hidden_dim": 64,
+    "factor_dim": 16,
+    "eta": 90.0,
+    "alpha": 0.9,
+    "topk": 5,
+    "kl_weight": 1.0,
+    "run_name": "",
+    "save_ckpt": 1
+  },
+  "model_cfg": {
+    "window_T": 20,
+    "num_features": 158,
+    "hidden_dim": 64,
+    "factor_dim": 16,
+    "eta_quantile": 90.0,
+    "alpha_decay": 0.9,
+    "topk": 5,
+    "kl_weight": 1.0
+  },
+  "npz_path": "data/csi300/csi300_alpha158_2013-01-01_2023-12-31.npz"
+}

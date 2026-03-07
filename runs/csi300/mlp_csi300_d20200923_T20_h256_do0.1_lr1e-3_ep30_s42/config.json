@@ -1,0 +1,16 @@
+{
+  "args": {
+    "data_dir": "data",
+    "market": "csi300",
+    "npz_path": "data/csi300/csi300_alpha158_2013-01-01_2023-12-31.npz",
+    "seed": 42,
+    "device": "cuda",
+    "window_T": 20,
+    "hidden": 256,
+    "dropout": 0.1,
+    "lr": 0.001,
+    "epochs": 30,
+    "run_name": "mlp_csi300_d20200923_T20_h256_do0.1_lr1e-3_ep30_s42"
+  },
+  "npz_path": "data/csi300/csi300_alpha158_2013-01-01_2023-12-31.npz"
+}

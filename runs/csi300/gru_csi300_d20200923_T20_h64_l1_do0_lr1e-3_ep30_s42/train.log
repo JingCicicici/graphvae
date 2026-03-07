@@ -1,0 +1,66 @@
+
+=== split 1: train=(0, 1181) valid=(1182, 1424) test=(1425, 1665) ===
+epoch=001 valid_loss=0.996424
+epoch=002 valid_loss=0.996940
+epoch=003 valid_loss=0.995931
+epoch=004 valid_loss=0.995264
+epoch=005 valid_loss=0.996656
+epoch=006 valid_loss=0.996335
+epoch=007 valid_loss=0.996316
+epoch=008 valid_loss=0.995472
+epoch=009 valid_loss=0.996117
+epoch=010 valid_loss=0.996218
+epoch=011 valid_loss=0.995043
+epoch=012 valid_loss=0.996475
+epoch=013 valid_loss=0.997605
+epoch=014 valid_loss=0.995420
+epoch=015 valid_loss=0.997893
+epoch=016 valid_loss=0.996682
+epoch=017 valid_loss=0.997300
+epoch=018 valid_loss=0.995907
+epoch=019 valid_loss=0.998233
+epoch=020 valid_loss=0.995564
+epoch=021 valid_loss=0.997808
+epoch=022 valid_loss=0.995997
+epoch=023 valid_loss=0.998289
+epoch=024 valid_loss=0.997488
+epoch=025 valid_loss=0.996004
+epoch=026 valid_loss=0.995749
+epoch=027 valid_loss=0.999136
+epoch=028 valid_loss=0.998319
+epoch=029 valid_loss=1.003958
+epoch=030 valid_loss=1.003849
+
+=== split 2: train=(238, 1424) valid=(1425, 1665) test=(1666, 1843) ===
+epoch=001 valid_loss=0.997173
+epoch=002 valid_loss=0.997686
+epoch=003 valid_loss=0.998062
+epoch=004 valid_loss=0.997792
+epoch=005 valid_loss=0.996972
+epoch=006 valid_loss=0.997226
+epoch=007 valid_loss=0.998427
+epoch=008 valid_loss=0.998450
+epoch=009 valid_loss=0.997465
+epoch=010 valid_loss=0.997647
+epoch=011 valid_loss=0.997825
+epoch=012 valid_loss=0.999842
+epoch=013 valid_loss=0.998479
+epoch=014 valid_loss=1.003008
+epoch=015 valid_loss=1.001381
+epoch=016 valid_loss=0.999013
+epoch=017 valid_loss=0.997889
+epoch=018 valid_loss=0.998796
+epoch=019 valid_loss=1.000623
+epoch=020 valid_loss=1.003293
+epoch=021 valid_loss=0.999187
+epoch=022 valid_loss=1.002444
+epoch=023 valid_loss=1.000519
+epoch=024 valid_loss=1.003274
+epoch=025 valid_loss=0.999906
+epoch=026 valid_loss=1.001141
+epoch=027 valid_loss=1.002522
+epoch=028 valid_loss=1.005528
+epoch=029 valid_loss=1.004870
+epoch=030 valid_loss=1.007156
+Saved metrics to: runs/csi300/gru_csi300_d20200923_T20_h64_l1_do0_lr1e-3_ep30_s42/daily_metrics.parquet
+Saved preds to: runs/csi300/gru_csi300_d20200923_T20_h64_l1_do0_lr1e-3_ep30_s42/daily_preds.parquet
