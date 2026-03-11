@@ -16,11 +16,14 @@ from .utils import set_seed, corr_ic, rank_ic
 from .models.graph_builder import GraphBuildConfig, build_neighbors_from_window
 
 
-def make_rolling_splits(dates, train_years=5, valid_years=1, test_years=1):
+def make_rolling_splits(dates, market: str = "csi300", train_years=None, valid_years=1, test_years=1):
     """Yield tuples of (train_idx_range, valid_idx_range, test_idx_range) by year.
 
-    Simplified rolling split builder.
+    CSI300/CSI500 use 5y-1y-1y; CSI1000 uses 3y-1y-1y.
     """
+    if train_years is None:
+        train_years = 3 if str(market).lower() == "csi1000" else 5
+
     years = sorted({d.year for d in dates})
     for end_train_year in range(years[0] + train_years - 1, years[-1] - (valid_years + test_years) + 1):
         train_start = end_train_year - train_years + 1
@@ -210,6 +213,15 @@ def main():
     npz_path = args.npz_path or os.path.join(args.data_dir, f"{args.market}_alpha158_2013-01-01_2023-12-31.npz")
     panel = load_panel_npz(npz_path)
 
+    if panel.label_source or panel.label_formula:
+        print(f"[label] source={panel.label_source} formula={panel.label_formula}")
+    else:
+        print("[label][WARN] label metadata missing in npz; please verify label definition manually.")
+
+    # next-day return label is undefined on the last trading date
+    max_label_idx = len(panel.dates) - 2
+    print(f"[data] max_label_idx={max_label_idx} (last usable date for next-day label)")
+
     cfg = GraphVAEConfig()
 
     # ✅ 输出目录：runs/<market>/<run_name>（不传 run_name 就回到 runs/<market>）
@@ -226,14 +238,25 @@ def main():
     all_results = []
     all_preds = []
 
-    for split_id, (train_rg, valid_rg, test_rg) in enumerate(make_rolling_splits(panel.dates), start=1):
-        print(f"\n=== split {split_id}: train={train_rg} valid={valid_rg} test={test_rg} ===")
+    for split_id, (train_rg, valid_rg, test_rg) in enumerate(make_rolling_splits(panel.dates, market=args.market), start=1):
+        train_end = min(train_rg[1], max_label_idx)
+        valid_end = min(valid_rg[1], max_label_idx)
+        test_end = min(test_rg[1], max_label_idx)
+
+        print(
+            f"\n=== split {split_id}: raw train={train_rg} valid={valid_rg} test={test_rg} | "
+            f"capped train=({train_rg[0]}, {train_end}) valid=({valid_rg[0]}, {valid_end}) test=({test_rg[0]}, {test_end}) ==="
+        )
+
+        if train_end < train_rg[0] or valid_end < valid_rg[0] or test_end < test_rg[0]:
+            print(f"[split {split_id}] skipped after max_label_idx cap")
+            continue
 
         model = GraphVAE(cfg).to(device)
 
-        train_ds = SlidingWindowDataset(panel, cfg.window_T, train_rg[0], train_rg[1])
-        valid_ds = SlidingWindowDataset(panel, cfg.window_T, valid_rg[0], valid_rg[1])
-        test_ds = SlidingWindowDataset(panel, cfg.window_T, test_rg[0], test_rg[1])
+        train_ds = SlidingWindowDataset(panel, cfg.window_T, train_rg[0], train_end)
+        valid_ds = SlidingWindowDataset(panel, cfg.window_T, valid_rg[0], valid_end)
+        test_ds = SlidingWindowDataset(panel, cfg.window_T, test_rg[0], test_end)
 
         train_loader = DataLoader(train_ds, batch_size=1, shuffle=True)
         valid_loader = DataLoader(valid_ds, batch_size=1, shuffle=False)
@@ -253,9 +276,9 @@ def main():
                 "model_cfg": asdict(cfg),
                 "args": vars(args),
                 "npz_path": npz_path,
-                "train_range": train_rg,
-                "valid_range": valid_rg,
-                "test_range": test_rg,
+                "train_range": (train_rg[0], train_end),
+                "valid_range": (valid_rg[0], valid_end),
+                "test_range": (test_rg[0], test_end),
             }
             torch.save(payload, ckpt_path)
             print(f"Saved ckpt to: {ckpt_path}")
@@ -267,6 +290,9 @@ def main():
         )
         all_results.append(metrics_df)
         all_preds.append(preds_df)
+
+    if not all_results:
+        raise RuntimeError("No valid rolling split after boundary checks; please verify date range and label availability.")
 
     # ---- save metrics ----
     out_df = pd.concat(all_results, ignore_index=True)

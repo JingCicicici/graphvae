@@ -17,6 +17,9 @@ class PanelData:
     features: np.ndarray
     # labels:   [D,N]   float32 (next-day return ratio aligned to date)
     labels: np.ndarray
+    # Optional metadata for label provenance transparency
+    label_source: Optional[str] = None
+    label_formula: Optional[str] = None
 
 
 class SlidingWindowDataset(Dataset):
@@ -67,4 +70,6 @@ def load_panel_npz(path: str) -> PanelData:
     instruments = obj["instruments"].tolist()
     features = obj["features"].astype(np.float32)
     labels = obj["labels"].astype(np.float32)
-    return PanelData(dates, instruments, features, labels)
+    label_source = obj["label_source"].item() if "label_source" in obj.files else None
+    label_formula = obj["label_formula"].item() if "label_formula" in obj.files else None
+    return PanelData(dates, instruments, features, labels, label_source=label_source, label_formula=label_formula)

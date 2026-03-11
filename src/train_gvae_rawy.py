@@ -15,7 +15,10 @@ from .data.dataset import load_panel_npz, SlidingWindowDataset, PanelData
 from .utils import set_seed, corr_ic, rank_ic
 
 
-def make_rolling_splits(dates, train_years=5, valid_years=1, test_years=1):
+def make_rolling_splits(dates, market: str = "csi300", train_years=None, valid_years=1, test_years=1):
+    if train_years is None:
+        train_years = 3 if str(market).lower() == "csi1000" else 5
+
     years = sorted({d.year for d in dates})
     for end_train_year in range(years[0] + train_years - 1, years[-1] - (valid_years + test_years) + 1):
         train_start = end_train_year - train_years + 1
@@ -168,12 +171,18 @@ def main():
     npz_path = args.npz_path or os.path.join(args.data_dir, f"{args.market}_alpha158_2013-01-01_2023-12-31.npz")
     panel = load_panel_npz(npz_path)
 
+    if panel.label_source or panel.label_formula:
+        print(f"[label] source={panel.label_source} formula={panel.label_formula}")
+    else:
+        print("[label][WARN] label metadata missing in npz; please verify label definition manually.")
+
     # build raw labels aligned to panel
     labels_raw = attach_raw_labels_from_qlib(panel, args.qlib_uri)
     panel_raw = PanelData(panel.dates, panel.instruments, panel.features, labels_raw)
 
     # IMPORTANT: next-day return has no label on the last date; cap max index
     max_label_idx = len(panel_raw.dates) - 2
+    print(f"[data] max_label_idx={max_label_idx} (last usable date for next-day label)")
 
     cfg = GraphVAEConfig(
         window_T=20,
@@ -198,7 +207,7 @@ def main():
 
     all_metrics, all_preds = [], []
 
-    for split_id, (train_rg, valid_rg, test_rg) in enumerate(make_rolling_splits(panel_raw.dates), start=1):
+    for split_id, (train_rg, valid_rg, test_rg) in enumerate(make_rolling_splits(panel_raw.dates, market=args.market), start=1):
         # cap end to max_label_idx
         train_end = min(train_rg[1], max_label_idx)
         valid_end = min(valid_rg[1], max_label_idx)
@@ -206,7 +215,10 @@ def main():
         if train_end < train_rg[0] or valid_end < valid_rg[0] or test_end < test_rg[0]:
             continue
 
-        print(f"\n=== split {split_id}: train=({train_rg[0]}, {train_end}) valid=({valid_rg[0]}, {valid_end}) test=({test_rg[0]}, {test_end}) ===")
+        print(
+            f"\n=== split {split_id}: raw train={train_rg} valid={valid_rg} test={test_rg} | "
+            f"capped train=({train_rg[0]}, {train_end}) valid=({valid_rg[0]}, {valid_end}) test=({test_rg[0]}, {test_end}) ==="
+        )
 
         model = GraphVAE(cfg).to(device)
 
@@ -228,6 +240,9 @@ def main():
         m_df, p_df = predict_daily(model, test_loader, device, instruments=panel_raw.instruments, split_id=split_id)
         all_metrics.append(m_df)
         all_preds.append(p_df)
+
+    if not all_metrics:
+        raise RuntimeError("No valid rolling split after boundary checks; please verify date range and label availability.")
 
     metrics = pd.concat(all_metrics, ignore_index=True)
     preds   = pd.concat(all_preds, ignore_index=True)
