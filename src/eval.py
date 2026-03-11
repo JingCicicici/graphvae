@@ -1,5 +1,11 @@
 from __future__ import annotations
 
+"""Quick evaluation helper.
+
+This script is only for fast sanity checks on precomputed daily returns.
+For paper-aligned evaluation (IC/RankIC + TopK-Drop + AR/IR), use `src.eval_full`.
+"""
+
 import argparse
 import pandas as pd
 import torch
@@ -13,7 +19,7 @@ def main():
     args = p.parse_args()
 
     if not args.pred_path:
-        print("This skeleton repo only includes a minimal metric pipeline. Integrate Qlib backtest for full TopK-Drop.")
+        print("Quick check only: pass a file with a `daily_ret` column. For paper evaluation use: python -m src.eval_full --pred_path runs/<market>/<run>/daily_preds.parquet")
         return
 
     df = pd.read_parquet(args.pred_path)

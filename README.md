@@ -49,8 +49,14 @@ python -m src.data.dump_qlib_alpha158 --provider_uri ~/.qlib/qlib_data/cn_data -
 python -m src.train --data_dir ./data/csi300 --market csi300
 ```
 
-3) Evaluate TopK-Drop:
+3) Paper-aligned evaluation (IC/RankIC + TopK-Drop + AR/IR):
 
 ```bash
-python -m src.eval --pred_path ./runs/csi300/predictions.parquet
+python -m src.eval_full --pred_path ./runs/csi300/daily_preds.parquet
+```
+
+For quick toy checks on precomputed `daily_ret`, you can still use:
+
+```bash
+python -m src.eval --pred_path ./runs/csi300/daily_ret_topkdrop_raw.parquet
 ```

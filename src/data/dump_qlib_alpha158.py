@@ -97,6 +97,9 @@ def dump_alpha158_panel(provider_uri: str, market: str, out_dir: str,
         features=X,
         labels=Y,
         feat_cols=np.array(feat_cols, dtype=object),
+        # Keep label provenance explicit for auditability.
+        label_source=np.array("qlib.contrib.data.handler.Alpha158::label", dtype=object),
+        label_formula=np.array("handler_config_dependent (commonly Ref($close, -2)/Ref($close, -1)-1)", dtype=object),
     )
     return out_path
 

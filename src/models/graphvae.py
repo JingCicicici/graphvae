@@ -9,7 +9,7 @@ import torch.nn.functional as F
 
 from .graph_builder import GraphBuildConfig, build_neighbors_from_window
 from .graph_relation import GraphRelationUpdate
-from ..utils import reparameterize, diag_gaussian_kl
+from ..utils import diag_gaussian_kl
 
 
 @dataclass
@@ -126,7 +126,7 @@ class GraphVAE(nn.Module):
 
         # prior factors
         mu_prior, sigma_prior = self.prior(e_hat)
-        z_prior = reparameterize(mu_prior, sigma_prior)
+        # Decoder follows the paper's analytic form with (mu_z, sigma_z), not sampled z.
         mu_pred, sigma_pred = self.decode(e_hat, mu_prior, sigma_prior)
 
         out = {
@@ -139,8 +139,7 @@ class GraphVAE(nn.Module):
 
         if y is not None:
             mu_post, sigma_post = self.posterior(e_hat, y)
-            z_post = reparameterize(mu_post, sigma_post)
-
+            # Keep reconstruction in analytic distribution form for consistency with Eq.(14).
             mu_rec, sigma_rec = self.decode(e_hat, mu_post, sigma_post)
 
             kl = diag_gaussian_kl(mu_post, sigma_post, mu_prior, sigma_prior)  # [N]
