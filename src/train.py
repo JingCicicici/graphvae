@@ -15,7 +15,7 @@ from .data.dataset import load_panel_npz, SlidingWindowDataset
 from .utils import set_seed, corr_ic, rank_ic
 from .models.graph_builder import GraphBuildConfig, build_neighbors_from_window
 
-
+# 核心函数 1：切分时间窗口 (Rolling Splits)
 def make_rolling_splits(dates, market: str = "csi300", train_years=None, valid_years=1, test_years=1):
     """Yield tuples of (train_idx_range, valid_idx_range, test_idx_range) by year.
 
@@ -30,6 +30,7 @@ def make_rolling_splits(dates, market: str = "csi300", train_years=None, valid_y
         valid_year = end_train_year + 1
         test_year = end_train_year + 2
 
+        # 索引
         train_idx = [i for i, d in enumerate(dates) if train_start <= d.year <= end_train_year]
         valid_idx = [i for i, d in enumerate(dates) if d.year == valid_year]
         test_idx = [i for i, d in enumerate(dates) if d.year == test_year]
@@ -37,40 +38,48 @@ def make_rolling_splits(dates, market: str = "csi300", train_years=None, valid_y
         if len(train_idx) == 0 or len(valid_idx) == 0 or len(test_idx) == 0:
             continue
 
+        # 吐出（yield）这一轮切好的时间段边界
         yield (min(train_idx), max(train_idx)), (min(valid_idx), max(valid_idx)), (min(test_idx), max(test_idx))
 
-
+# 核心函数 2：训练流水线 (Train One Split)
 def train_one_split(
     model: GraphVAE,
     train_loader: DataLoader,
     valid_loader: DataLoader,
     device: torch.device,
-    lr: float = 1e-3,
+    lr: float = 1e-3,#学习率
     epochs: int = 10,
 ) -> Tuple[GraphVAE, Optional[dict], float]:
     """Train one rolling split, return (best_model_loaded, best_state_dict, best_valid_loss)."""
+    # opt 就是“修车师傅”（优化器 Adam）。它负责根据误差去拧模型里的螺丝（修改参数权重）
     opt = torch.optim.Adam(model.parameters(), lr=lr)
     best = float("inf")
     best_state = None
 
-    for ep in range(1, epochs + 1):
+    for ep in range(1, epochs + 1):# 循环每一遍 (epoch)
         # -------- train --------
         model.train()
         for xw, y, _, _ in train_loader:   # dataset returns 4 values
+
+            # .to(device) 是把肉块搬到显卡内存里去，不然 GPU 算不到
             xw = xw.squeeze(0).to(device)  # [T, N_s, C]
             y = y.squeeze(0).to(device)    # [N_s]
 
+            # 【前向传播】：机器吃下肉，吐出结果字典（触发你之前学过的 forward 函数！
             out = model(xw, y=y)
-            loss = out["loss"]
+            loss = out["loss"]# 拿出总误差
 
-            opt.zero_grad()
-            loss.backward()
-            opt.step()
+            # 【PyTorch 修理机器神圣三步曲】
+            opt.zero_grad()# 1. 师傅先把扳手上的旧机油擦干净（清空上一步的梯度）
+            loss.backward()# 2. 顺着误差往回倒推，算出每个齿轮错得有多离谱
+            opt.step()# 3. 师傅用力一拧！正式修改模型里的参数权重（更新参数）
 
         # -------- valid --------
-        model.eval()
+        model.eval()# 告诉机器：“现在是考试！不要瞎改自己的参数了
         vloss = 0.0
         n = 0
+
+        # torch.no_grad() 是省钱开关，考试不用算梯度，省下大把显存
         with torch.no_grad():
             for xw, y, _, _ in valid_loader:
                 xw = xw.squeeze(0).to(device)
@@ -79,14 +88,15 @@ def train_one_split(
                 out = model(xw, y=y)
                 loss = out["loss"]
 
-                vloss += float(loss.item())
+                vloss += float(loss.item())# 累计错题本的扣分
                 n += 1
 
         vloss /= max(n, 1)
 
+        # 如果这次考试的平均分，比历史最好成绩 (best) 还要好
         if vloss < best:
             best = vloss
-            # keep a CPU copy to save memory
+            # 就把当前模型脑子里的参数（state_dict）赶紧保存下来当备份！
             best_state = {k: v.detach().cpu() for k, v in model.state_dict().items()}
 
         print(f"epoch={ep:03d} valid_loss={vloss:.6f}")
@@ -95,10 +105,10 @@ def train_one_split(
         model.load_state_dict(best_state)
     return model, best_state, float(best)
 
-
+# 核心函数 3：实盘预测 (Predict Daily)
 def predict_daily(model, loader, device, instruments=None, split_id=None):
     """Return (metrics_df, preds_df)."""
-    model.eval()
+    model.eval()# 同样，预测时绝对不能碰参数！
     rows_metrics = []
     rows_preds = []
 
@@ -107,19 +117,26 @@ def predict_daily(model, loader, device, instruments=None, split_id=None):
             xw = xw.squeeze(0).to(device)  # [T, N_s, C]
             y = y.squeeze(0).to(device)    # [N_s]
 
-            if isinstance(inst_idx, torch.Tensor):
+            if isinstance(inst_idx, torch.Tensor):# 判断 inst_idx（股票的数字编号）是不是 PyTorch 的 Tensor 格式
                 inst_idx = inst_idx.squeeze(0)
 
-            out = model(xw, y=None)
+            out = model(xw, y=None)# 预测时，只喂特征 xw，不再喂正确答案 y 了（y=None）
+            # .detach()：把它从 PyTorch 的计算图里硬生生扯下来（断绝关系）。
+                # .cpu()：把它从高贵的显卡里搬回到普通内存里。
+                # .flatten()：把它从竖着的 Excel 表（二维矩阵），直接拍扁成一条长长的一维线。
             mu_pred = out["mu_pred"].detach().cpu().flatten()
+
+            # 把真实答案 y 也做同样的处理，拍扁成一条线
             y_true = y.detach().cpu().flatten()
 
             if isinstance(date_str, (list, tuple)):
                 date_str = date_str[0]
 
             # ---- daily metrics ----
-            ic = corr_ic(mu_pred, y_true)
-            ric = rank_ic(mu_pred, y_true)
+            ic = corr_ic(mu_pred, y_true)# corr_ic：算“预测值”和“真实值”的皮尔逊相关系数（看数值走势贴不贴合）。
+            ric = rank_ic(mu_pred, y_true)# rank_ic：算斯皮尔曼秩相关系数。它只在乎你给股票的【排名】对不对！
+
+            # 把这一天的总成绩（IC和RankIC），记在小本本 rows_metrics 上。
             rows_metrics.append({
                 "date": date_str,
                 "batch_idx": batch_idx,
@@ -129,6 +146,7 @@ def predict_daily(model, loader, device, instruments=None, split_id=None):
             })
 
             # ---- per-stock preds ----
+            # 把刚才拍扁的 PyTorch 张量，全部转换成 Python 最基础的普通列表 (.tolist())。
             inst_idx_list = inst_idx.detach().cpu().tolist() if isinstance(inst_idx, torch.Tensor) else list(inst_idx)
             pred_list = mu_pred.tolist()
             label_list = y_true.tolist()
@@ -138,6 +156,9 @@ def predict_daily(model, loader, device, instruments=None, split_id=None):
                     f"Length mismatch: inst_idx={len(inst_idx_list)} pred={len(pred_list)} label={len(label_list)}"
                 )
 
+            # zip 是一个极其好用的“拉链”函数！
+                # 它把这三个列表像拉链一样咬合在一起。每次循环，同时从三个列表里各掏出一个元素。
+            # gidx是股票编号，p是预测分数，r是真实涨跌幅
             for gidx, p, r in zip(inst_idx_list, pred_list, label_list):
                 row = {
                     "date": date_str,
@@ -146,15 +167,18 @@ def predict_daily(model, loader, device, instruments=None, split_id=None):
                     "label": float(r),
                     "split": split_id if split_id is not None else -1,
                 }
+                # 如果传了股票的具体名字（比如 'SH600000'），也把它写进去
                 if instruments is not None:
                     row["instrument"] = str(instruments[int(gidx)])
+
+                # 如果传了股票的具体名字（比如 'SH600000'），也把它写进去
                 rows_preds.append(row)
 
     metrics_df = pd.DataFrame(rows_metrics)
     preds_df = pd.DataFrame(rows_preds)
     return metrics_df, preds_df
 
-
+# 这个函数的作用就是：不用真实数据，凭空捏造一点假数据喂给模型，看看模型会不会当场崩溃（冒烟）
 def smoke_test():
     T, N, C = 20, 64, 158
     x = torch.randn(T, N, C)
@@ -165,6 +189,7 @@ def smoke_test():
     print("smoke loss:", out["loss"].item())
 
 
+# 冒烟测试只测了机器空转，但真实世界里的生肉（数据）长什么样，机器还不一定适应。这个函数就是拿着你硬盘里真实的 .npz 数据文件，去跑通一遍数据流水线。
 def graph_test(npz_path: str):
     panel = load_panel_npz(npz_path)
     cfg = GraphVAEConfig()
@@ -238,6 +263,7 @@ def main():
     all_results = []
     all_preds = []
 
+    # 开启“滚动时间窗口”大循环 (Rolling Splits)
     for split_id, (train_rg, valid_rg, test_rg) in enumerate(make_rolling_splits(panel.dates, market=args.market), start=1):
         train_end = min(train_rg[1], max_label_idx)
         valid_end = min(valid_rg[1], max_label_idx)
